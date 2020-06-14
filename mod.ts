@@ -93,7 +93,7 @@ async function tick() {
             }
           }
           // Sort pairs from closest to farthest
-          p.sort(({distance: distance1}, {distance: distance2}) => distance2 - distance1);
+          p.sort(({distance: distance1}, {distance: distance2}) => distance1 - distance2);
           const bound = 0.01;
           if (Math.acos(p[0].dot) < bound) hitBoundry = true;
           if (Math.acos(p[1].dot) < bound) hitBoundry = true;
