@@ -59,15 +59,17 @@ if (isDeno) {
     keyPressed.length = 0;
   };
 
-  Deno.setRaw(Deno.stdin.rid, true);
   setInterval(async () => {
-    isListening = true;
-    dispachKeyUp();
-    const buffer = new Uint8Array(1024);
-    const length = <number>await Deno.stdin.read(buffer);
-    dispachKeyDown(buffer.subarray(0, length));
-    //Deno.setRaw(0, false);
-    isListening = false;
+    if (!isListening) {
+      isListening = true;
+      dispachKeyUp();
+      Deno.setRaw(Deno.stdin.rid, true);
+      const buffer = new Uint8Array(1024);
+      const length = <number>await Deno.stdin.read(buffer);
+      dispachKeyDown(buffer.subarray(0, length));
+      Deno.setRaw(0, false);
+      isListening = false;
+    }
   }, interval);
 }
 
