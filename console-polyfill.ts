@@ -1,4 +1,3 @@
-export {};
 /**
  * Extends Deno TTY api based on browser API
  */
@@ -17,8 +16,11 @@ declare global {
   }
 }
 
+export const isBrowser = window.hasOwnProperty("document");
+export const isDeno = !isBrowser;
+
 // Polyfill for window.document.body.innerText
-if (!window.document) {
+if (isDeno) {
   window.document = {
     body: {
       set innerText(value: string) {
@@ -28,7 +30,18 @@ if (!window.document) {
   };
 }
 
-if (!window.requestAnimationFrame) {
+// Polyfill for window.requestAnimationFrame
+if (isDeno) {
+  window.requestAnimationFrame = (callback: () => void) => {
+    const interval = 100;
+    setTimeout(() => {
+      callback();
+    }, interval);
+  };
+}
+
+// Polyfill for keydown & keyup
+if (isDeno) {
   const interval = 100;
 
   let isListening = false;
@@ -42,6 +55,9 @@ if (!window.requestAnimationFrame) {
       const event = new Event("keydown");
       (<any>event).key = key;
       dispatchEvent(event);
+      if(key === 'c') {
+          Deno.exit(0);
+      }
     }
   };
 
@@ -66,23 +82,12 @@ if (!window.requestAnimationFrame) {
   }, interval);
 }
 
-// Polyfill for window.requestAnimationFrame
-if (!window.requestAnimationFrame) {
-  window.requestAnimationFrame = (callback: () => void) => {
-    const interval = 100;
-    setTimeout(() => {
-      callback();
-    }, interval);
-  };
-}
-
 // Clear: in Deno console.clear should clear the console.
-if(typeof(Deno) !== 'undefined') {
-    const encoder = new TextEncoder();
-
-    console.clear = () => {
-        Deno.stdout.writeSync(encoder.encode("\x1B[2J"));
-    }
+if (isDeno) {
+  const encoder = new TextEncoder();
+  console.clear = () => {
+    Deno.stdout.writeSync(encoder.encode("\x1B[2J"));
+  };
 } else {
-    console.clear = () => {} // Avoid to clean the real console in browser mode
+  console.clear = () => {}; // Avoid to clean the real console in browser mode
 }
