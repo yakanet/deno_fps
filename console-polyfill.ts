@@ -19,17 +19,6 @@ declare global {
 export const isBrowser = window.hasOwnProperty("document");
 export const isDeno = !isBrowser;
 
-// Polyfill for window.document.body.innerText
-if (isDeno) {
-  window.document = {
-    body: {
-      set innerText(value: string) {
-        console.log(value);
-      },
-    },
-  };
-}
-
 // Polyfill for window.requestAnimationFrame
 if (isDeno) {
   window.requestAnimationFrame = (callback: () => void) => {
@@ -55,8 +44,8 @@ if (isDeno) {
       const event = new Event("keydown");
       (<any>event).key = key;
       dispatchEvent(event);
-      if(key === 'c') {
-          Deno.exit(0);
+      if (key === "c") {
+        Deno.exit(0);
       }
     }
   };
@@ -88,6 +77,4 @@ if (isDeno) {
   console.clear = () => {
     Deno.stdout.writeSync(encoder.encode("\x1B[2J"));
   };
-} else {
-  console.clear = () => {}; // Avoid to clean the real console in browser mode
 }

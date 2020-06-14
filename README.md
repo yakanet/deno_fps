@@ -4,6 +4,7 @@ Based on https://github.com/OneLoneCoder/CommandLineFPS
 ```
 deno run --unstable .\mod.ts
 ```
+Press c to quit
 
 # Run in browser
 ```
