@@ -148,6 +148,16 @@ async function tick() {
   window.requestAnimationFrame(async () => await tick());
 }
 
+// Will display in HTML document instead of console
+if (isBrowser) {
+  console.log = (...args: unknown[]) => {
+      window.document.body.innerText = args.join('');
+  }
+  console.clear = () => {} // Avoid to clean the real console in browser mode
+}
+
+tick();
+
 function getPlayerIcon(a: number){
   const icons = '↓↘→↗↑↖←↙↓';
   return icons[round(toDegree(a) / 45)];
@@ -160,16 +170,6 @@ function toDegree(radian:number) {
   }
   return degree;
 }
-
-// Will display in HTML document instead of console
-if (isBrowser) {
-  console.log = (...args: unknown[]) => {
-      window.document.body.innerText = args.join('');
-  }
-  console.clear = () => {} // Avoid to clean the real console in browser mode
-}
-
-tick();
 
 function num(value: number) {
   return {
