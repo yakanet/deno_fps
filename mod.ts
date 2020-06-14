@@ -1,5 +1,5 @@
 import { isBrowser } from './console-polyfill.ts';
-
+const {PI, trunc, sin, cos, sqrt, acos, round} = Math;
 const rawMap = `|################
                 |#..............#
                 |#..............#
@@ -26,7 +26,7 @@ const speed = { front: 2.0, side: 0.5 } as const;
 
 const buffer = new Array<string>(screen.width * screen.height);
 const depth = 16.0;
-const fov = Math.PI / 4.0;
+const fov = PI / 4.0;
 const clock = {
   start: performance.now(),
   end: performance.now(),
@@ -51,12 +51,12 @@ async function tick() {
     player.angle += speed.side * elapsed;
   }
   if (keyPressed.has("z")) {
-    player.x = player.x + Math.sin(player.angle) * speed.front * elapsed;
-    player.y = player.y + Math.cos(player.angle) * speed.front * elapsed;
+    player.x = player.x + sin(player.angle) * speed.front * elapsed;
+    player.y = player.y + cos(player.angle) * speed.front * elapsed;
   }
   if (keyPressed.has("s")) {
-    player.x = player.x - Math.sin(player.angle) * speed.front * elapsed;
-    player.y = player.y - Math.cos(player.angle) * speed.front * elapsed;
+    player.x = player.x - sin(player.angle) * speed.front * elapsed;
+    player.y = player.y - cos(player.angle) * speed.front * elapsed;
   }
 
   // Walls
@@ -66,7 +66,7 @@ async function tick() {
     let hitWall = false;
     let hitBoundry = false;
 
-    const eye = { x: Math.sin(rayAngle), y: Math.cos(rayAngle) };
+    const eye = { x: sin(rayAngle), y: cos(rayAngle) };
     while (!hitWall && distanceToWall < depth) {
       distanceToWall += 0.1;
       const test = {
@@ -87,17 +87,17 @@ async function tick() {
             for (let ty = 0; ty < 2; ty++) {
               const vy = test.y + ty - player.y;
               const vx = test.x + tx - player.x;
-              const d = Math.sqrt(vx * vx + vy * vy);
+              const d = sqrt(vx * vx + vy * vy);
               const dot = (eye.x * vx) / d + (eye.y * vy) / d;
               p.push({distance: d, dot});
             }
           }
           // Sort pairs from closest to farthest
           p.sort(({distance: distance1}, {distance: distance2}) => distance1 - distance2);
-          const bound = 0.01;
-          if (Math.acos(p[0].dot) < bound) hitBoundry = true;
-          if (Math.acos(p[1].dot) < bound) hitBoundry = true;
-          //if(Math.acos(p[2].dot) < bound) hitBoundry = true;
+          const bound = 0.005;
+          if (acos(p[0].dot) < bound) hitBoundry = true;
+          if (acos(p[1].dot) < bound) hitBoundry = true;
+          //if (acos(p[2].dot) < bound) hitBoundry = true;
         }
       }
     }
@@ -136,21 +136,34 @@ async function tick() {
       buffer[(ny + 1) * screen.width + nx + 1] = rawMap[ny * map.width + nx];
     }
   }
-  buffer[Math.trunc(player.y + 1) * screen.width + Math.trunc(player.x + 1)] = "P";
+  buffer[trunc(player.y + 1) * screen.width + trunc(player.x + 1)] = getPlayerIcon(player.angle);
 
   // Add line break to have screen.width line length
   for (let i = 0; i < screen.height; i++) {
     buffer[screen.width * i] = "\n";
   }
 
-  console.log(`X=${player.x}, Y=${player.y}, A=${player.angle}, Key=${[...keyPressed].join('')}, FPS=${1 /elapsed}\n` + buffer.join(""));
+  console.log(`X=${player.x}, Y=${player.y}, A=${toDegree(player.angle)}, Key=${[...keyPressed].join('')}, FPS=${1 /elapsed}\n` + buffer.join(""));
   // Loop
   window.requestAnimationFrame(async () => await tick());
 }
 
+function getPlayerIcon(a: number){
+  const icons = '↓↘→↗↑↖←↙↓';
+  return icons[round(toDegree(a) / 45)];
+}
+
+function toDegree(radian:number) {
+  const degree = (radian * 180 / PI) % 360;
+  if(degree < 0) {
+    return degree + 360;
+  }
+  return degree;
+}
+
 // Will display in HTML document instead of console
 if (isBrowser) {
-  console.log = (...args: any) => {
+  console.log = (...args: unknown[]) => {
       window.document.body.innerText = args.join('');
   }
   console.clear = () => {} // Avoid to clean the real console in browser mode
