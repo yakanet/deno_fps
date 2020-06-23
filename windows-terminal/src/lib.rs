@@ -19,6 +19,9 @@ pub fn deno_plugin_init(interface: &mut dyn Interface) {
     interface.register_op("get_console_screen_info", get_console_screen_info);
 }
 
+/**
+ * @see https://docs.microsoft.com/en-us/windows/console/createconsolescreenbuffer
+ */
 fn create_console_screen_buffer(
     _interface: &mut dyn Interface,
     _data: &[u8],
@@ -32,6 +35,9 @@ fn create_console_screen_buffer(
     }
 }
 
+/**
+ * @see https://docs.microsoft.com/en-us/windows/console/getconsolescreenbufferinfo
+ */
 fn get_console_screen_info(_interface: &mut dyn Interface,
                            _data: &[u8],
                            _zero_copy: &mut [ZeroCopyBuf], ) -> Op {
@@ -44,6 +50,9 @@ fn get_console_screen_info(_interface: &mut dyn Interface,
     Op::Sync(Box::from([console_info.dwSize.X as u8, console_info.dwSize.Y as u8]))
 }
 
+/**
+ * @see https://docs.microsoft.com/en-us/windows/console/writeconsoleoutputcharacter
+ */
 fn write_console_output_character(
     _interface: &mut dyn Interface,
     data: &[u8],
