@@ -19,6 +19,7 @@ declare global {
 export const isBrowser = window.hasOwnProperty("document");
 export const isDeno = !isBrowser;
 
+//#region Console
 // Polyfill for window.requestAnimationFrame
 if (isDeno) {
   window.requestAnimationFrame = (callback: () => void) => {
@@ -80,7 +81,9 @@ if (isDeno) {
     Deno.stdout.writeSync(encoder.encode("\x1B[2J"));
   };
 }
+//#endregion
 
+//#region Browser
 // Will display in HTML document instead of console
 if (isBrowser) {
   console.log = (...args: unknown[]) => {
@@ -88,3 +91,4 @@ if (isBrowser) {
   }
   console.clear = () => {} // Avoid to clean the real console in browser mode
 }
+//#endregion
