@@ -4,15 +4,6 @@
 declare global {
   interface Window {
     requestAnimationFrame: (cb: () => void) => void;
-    document: {
-      body: {
-        innerText: string;
-      };
-    };
-  }
-
-  interface KeyboardEvent extends Event {
-    key: string;
   }
 }
 
@@ -42,8 +33,7 @@ if (isDeno) {
     const keys = decoder.decode(message);
     keyPressed = keys.split("");
     for (let key of keyPressed) {
-      const event = new Event("keydown");
-      (<any>event).key = key;
+      const event = Object.assign(new Event("keydown"), { key });
       dispatchEvent(event);
       if (key === "c") {
         Deno.exit(0);
@@ -53,8 +43,7 @@ if (isDeno) {
 
   const dispachKeyUp = () => {
     for (let key of keyPressed) {
-      const event = new Event("keyup") as KeyboardEvent;
-      event.key = key;
+      const event = Object.assign(new Event("keyup"), { key });
       dispatchEvent(event);
     }
     keyPressed.length = 0;
@@ -87,8 +76,9 @@ if (isDeno) {
 // Will display in HTML document instead of console
 if (isBrowser) {
   console.log = (...args: unknown[]) => {
-      window.document.body.innerText = args.join('');
-  }
-  console.clear = () => {} // Avoid to clean the real console in browser mode
+    // @ts-ignore
+    window.document.body.innerText = args.join("");
+  };
+  console.clear = () => {}; // Avoid to clean the real console in browser mode
 }
 //#endregion
