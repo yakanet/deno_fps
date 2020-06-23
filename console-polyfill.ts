@@ -1,3 +1,4 @@
+export {};
 /**
  * Extends Deno TTY api based on browser API
  */
@@ -7,8 +8,8 @@ declare global {
   }
 }
 
-export const isBrowser = window.hasOwnProperty("document");
-export const isDeno = !isBrowser;
+const isBrowser = window.hasOwnProperty("document");
+const isDeno = !isBrowser;
 
 //#region Console
 // Polyfill for window.requestAnimationFrame
