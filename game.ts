@@ -11,7 +11,10 @@ export class RawMap {
   public readonly height: number;
 
   constructor(rawMap: string) {
-    const mapLines = rawMap.trim().split("|").filter(line => !!line.trim());
+    const mapLines = rawMap
+      .trim()
+      .split("|")
+      .filter((line) => !!line.trim());
     this.height = mapLines.length;
     this.width = Math.min(...mapLines.map((x) => x.length));
     this.rawMap = mapLines.map((line) => line.trim()).join("");
@@ -41,6 +44,7 @@ const defaultOptions = {
   playerY: 8,
   depth: 16.0,
   fov: PI / 4.0,
+  useBreakLine: true,
 };
 
 export class Game {
@@ -52,19 +56,22 @@ export class Game {
   private depth: number;
   private fov: number;
   private speed = { front: 2.0, side: 0.5 } as const;
+  private useBreakLine: boolean;
 
   constructor(
     private width: number,
     private height: number,
-    options = defaultOptions
+    partialOptions: Partial<typeof defaultOptions> = defaultOptions
   ) {
+    const opts = Object.assign({}, defaultOptions, partialOptions) as typeof defaultOptions;
     this.initializeKeyboardListener();
     this.buffer = new Array<string>(width * height);
-    this.depth = options.depth;
-    this.fov = options.fov;
-    this.rawMap = options.map.rawMap;
-    this.rawMapSize = { width: options.map.width, height: options.map.height };
-    this.player = { x: options.playerX, y: options.playerY, angle: 0.0 };
+    this.depth = opts.depth;
+    this.fov = opts.fov;
+    this.rawMap = opts.map.rawMap;
+    this.rawMapSize = { width: opts.map.width, height: opts.map.height };
+    this.player = { x: opts.playerX, y: opts.playerY, angle: 0.0 };
+    this.useBreakLine = opts.useBreakLine;
   }
 
   /**
@@ -97,8 +104,10 @@ export class Game {
     this.renderWalls();
 
     // Add line break to have screen.width line length
-    for (let i = 0; i < height; i++) {
-      buffer[width * i] = LINE_BREAK;
+    if (this.useBreakLine) {
+      for (let i = 0; i < height; i++) {
+        buffer[width * i] = LINE_BREAK;
+      }
     }
 
     // Add minimap

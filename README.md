@@ -11,3 +11,8 @@ Press c to quit
 deno bundle --unstable mod.ts > bundle.js
 npx http-server .
 ```
+
+# Run in console using deno plugin (works only on Windows)
+```
+deno run --unstable -A .\mod-native.ts
+```
