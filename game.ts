@@ -63,7 +63,11 @@ export class Game {
     private height: number,
     partialOptions: Partial<typeof defaultOptions> = defaultOptions
   ) {
-    const opts = Object.assign({}, defaultOptions, partialOptions) as typeof defaultOptions;
+    const opts = Object.assign(
+      {},
+      defaultOptions,
+      partialOptions
+    ) as typeof defaultOptions;
     this.initializeKeyboardListener();
     this.buffer = new Array<string>(width * height);
     this.depth = opts.depth;
@@ -115,11 +119,10 @@ export class Game {
 
     // Display this rendering in the console
     console.log(
-      `X=${player.x}, Y=${player.y}, A=${toDegree(player.angle)}, Key=${[
-        ...keyPressed,
-      ].join("")}, FPS=${1 / elapsed}`.padEnd(width, " ") +
-        LINE_BREAK +
-        buffer.join("")
+      [
+        `X=${player.x}, Y=${player.y}, A=${toDegree(player.angle)}, Key=${[...keyPressed,].join("")}, FPS=${1 / elapsed}`.padEnd(width, " "),
+        buffer.join(""),
+      ].join(this.useBreakLine ? LINE_BREAK : "")
     );
 
     // Loop
