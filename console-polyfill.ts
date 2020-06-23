@@ -80,3 +80,11 @@ if (isDeno) {
     Deno.stdout.writeSync(encoder.encode("\x1B[2J"));
   };
 }
+
+// Will display in HTML document instead of console
+if (isBrowser) {
+  console.log = (...args: unknown[]) => {
+      window.document.body.innerText = args.join('');
+  }
+  console.clear = () => {} // Avoid to clean the real console in browser mode
+}

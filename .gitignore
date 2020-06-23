@@ -1,2 +1,5 @@
 .cache
 bundle.js
+windows-terminal/target
+.deno_plugins
+.idea
