@@ -1,12 +1,4 @@
-export {};
-/**
- * Extends Deno TTY api based on browser API
- */
-declare global {
-  interface Window {
-    requestAnimationFrame: (cb: () => void) => void;
-  }
-}
+/// <reference path="./global.d.ts" />
 
 const isBrowser = window.hasOwnProperty("document");
 const isDeno = !isBrowser;

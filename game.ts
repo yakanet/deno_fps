@@ -1,3 +1,5 @@
+/// <reference path="./global.d.ts" />
+
 const { PI, trunc, sin, cos, sqrt, acos, round } = Math;
 const LINE_BREAK = "\n" as const;
 const clock = {
@@ -34,16 +36,16 @@ const defaultOptions = {
      |#..........#####
      |#..............#
      |#..............#
-     |#......##......#
-     |#..............#
+     |#......#.......#
+     |#.......#......#
      |#..............#
      |#..............#
      |################`
   ),
   playerX: 8,
   playerY: 8,
-  depth: 16.0,
-  fov: PI / 4.0,
+  renderDistance: 16,
+  fov: PI / 4,
   useBreakLine: true,
 };
 
@@ -53,9 +55,9 @@ export class Game {
   private rawMapSize: { width: number; height: number };
   private player: { x: number; y: number; angle: number };
   private buffer: string[];
-  private depth: number;
+  private renderDistance: number;
   private fov: number;
-  private speed = { front: 2.0, side: 0.5 } as const;
+  private speed = { front: 2.0, side: 2.0 } as const;
   private useBreakLine: boolean;
 
   constructor(
@@ -70,7 +72,7 @@ export class Game {
     ) as typeof defaultOptions;
     this.initializeKeyboardListener();
     this.buffer = new Array<string>(width * height);
-    this.depth = opts.depth;
+    this.renderDistance = opts.renderDistance;
     this.fov = opts.fov;
     this.rawMap = opts.map.rawMap;
     this.rawMapSize = { width: opts.map.width, height: opts.map.height };
@@ -159,7 +161,7 @@ export class Game {
       height,
       player,
       fov,
-      depth,
+      renderDistance,
       rawMapSize: map,
       buffer,
     } = this;
@@ -170,18 +172,18 @@ export class Game {
       let hitBoundry = false;
 
       const eye = { x: sin(rayAngle), y: cos(rayAngle) };
-      while (!hitWall && distanceToWall < depth) {
+      while (!hitWall && distanceToWall < renderDistance) {
         distanceToWall += 0.1;
         const test = {
-          x: Math.floor(player.x + eye.x * distanceToWall),
-          y: Math.floor(player.y + eye.y * distanceToWall),
+          x: round(player.x + eye.x * distanceToWall),
+          y: round(player.y + eye.y * distanceToWall),
         } as const;
         if (
           num(test.x).outside(0, map.width) ||
           num(test.y).outside(0, map.height)
         ) {
           hitWall = true;
-          distanceToWall = depth;
+          distanceToWall = renderDistance;
         } else {
           if (rawMap[test.y * map.width + test.x] === "#") {
             hitWall = true;
@@ -212,10 +214,10 @@ export class Game {
       const floor = height - ceiling;
       let shade = " ";
       if (hitBoundry) shade = " ";
-      else if (distanceToWall <= depth / 4.0) shade = "█";
-      else if (distanceToWall <= depth / 3.0) shade = "▓";
-      else if (distanceToWall <= depth / 2.0) shade = "▒";
-      else if (distanceToWall <= depth / 1.0) shade = "░";
+      else if (distanceToWall <= renderDistance / 4) shade = "█";
+      else if (distanceToWall <= renderDistance / 3) shade = "▓";
+      else if (distanceToWall <= renderDistance / 2) shade = "▒";
+      else if (distanceToWall <= renderDistance / 1) shade = "░";
       else shade = " ";
 
       // Render in buffer
@@ -241,10 +243,7 @@ export class Game {
     const {
       rawMap,
       width,
-      height,
       player,
-      fov,
-      depth,
       rawMapSize: map,
       buffer,
     } = this;
