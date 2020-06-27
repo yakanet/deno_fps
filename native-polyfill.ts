@@ -7,14 +7,13 @@ const [width, height] = terminal.get_console_screen_info();
 
 // Polyfill for window.requestAnimationFrame
 window.requestAnimationFrame = (callback: () => void) => {
-  const interval = 0;
-  setTimeout(() => {
-    callback();
-  }, interval);
+  setTimeout(() => callback(), 0);
 };
 
 console.log = (...args: unknown[]) => {
     terminal.write_console_output_character(args[0] as string);
 }
+
+console.clear = () => {}
 
 export { width, height };

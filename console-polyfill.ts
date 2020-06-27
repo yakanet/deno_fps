@@ -55,14 +55,6 @@ if (isDeno) {
     }
   }, interval);
 }
-
-// Clear: in Deno console.clear should clear the console.
-if (isDeno) {
-  const encoder = new TextEncoder();
-  console.clear = () => {
-    Deno.stdout.writeSync(encoder.encode("\x1B[2J"));
-  };
-}
 //#endregion
 
 //#region Browser
