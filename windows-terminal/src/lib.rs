@@ -3,7 +3,7 @@ use std::cell::RefCell;
 use deno_core::{Op, ZeroCopyBuf};
 use deno_core::plugin_api::Interface;
 use winapi::shared::minwindef::DWORD;
-use winapi::um::wincon::{CONSOLE_SCREEN_BUFFER_INFO, CONSOLE_TEXTMODE_BUFFER, COORD, CreateConsoleScreenBuffer, GetConsoleScreenBufferInfo, SetConsoleActiveScreenBuffer, WriteConsoleOutputCharacterA, WriteConsoleOutputCharacterW};
+use winapi::um::wincon::{CONSOLE_SCREEN_BUFFER_INFO, CONSOLE_TEXTMODE_BUFFER, COORD, CreateConsoleScreenBuffer, GetConsoleScreenBufferInfo, SetConsoleActiveScreenBuffer, WriteConsoleOutputCharacterW};
 use winapi::um::winnt::{GENERIC_READ, HANDLE};
 
 use winapi_empty::Empty;

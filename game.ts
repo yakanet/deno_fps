@@ -57,7 +57,7 @@ export class Game {
   private buffer: string[];
   private renderDistance: number;
   private fov: number;
-  private speed = { front: 2.0, side: 2.0 } as const;
+  private speed = { front: 2.0, side: 1.0 } as const;
   private useBreakLine: boolean;
 
   constructor(
@@ -93,8 +93,6 @@ export class Game {
   }
 
   public tick() {
-    const { player, width, height, keyPressed, buffer } = this;
-
     // Clear the screen
     console.clear();
 
@@ -107,28 +105,13 @@ export class Game {
     this.movePlayer(this.keyPressed, elapsed);
 
     // Render wall accordint to the player position
-    this.renderWalls();
+    this.processWorld();
 
-    // Add line break to have screen.width line length
-    if (this.useBreakLine) {
-      for (let i = 0; i < height; i++) {
-        buffer[width * i] = LINE_BREAK;
-      }
-    }
-
-    // Add minimap
-    this.renderMiniMap();
-
-    // Display this rendering in the console
-    console.log(
-      [
-        `X=${player.x}, Y=${player.y}, A=${toDegree(player.angle)}, Key=${[...keyPressed,].join("")}, FPS=${1 / elapsed}`.padEnd(width, " "),
-        buffer.join(""),
-      ].join(this.useBreakLine ? LINE_BREAK : "")
-    );
+    // Print in the console the buffer
+    this.render(elapsed);
 
     // Loop
-    window.requestAnimationFrame(async () => await this.tick());
+    window.requestAnimationFrame(() => this.tick());
   }
 
   /**
@@ -154,73 +137,45 @@ export class Game {
     }
   }
 
-  private renderWalls() {
-    const {
-      rawMap,
-      width,
-      height,
-      player,
-      fov,
-      renderDistance,
-      rawMapSize: map,
-      buffer,
-    } = this;
+  /**
+   * Calculate wall distances, floor and ceiling positions
+   */
+  private processWorld() {
+    const { rawMap, width, height, rawMapSize: map } = this;
+    const { fov, renderDistance, player, buffer } = this;
     for (let x = 0; x < width; x++) {
       const rayAngle = player.angle - fov / 2.0 + (x / width) * fov;
       let distanceToWall = 0.0;
       let hitWall = false;
-      let hitBoundry = false;
 
       const eye = { x: sin(rayAngle), y: cos(rayAngle) };
-      while (!hitWall && distanceToWall < renderDistance) {
+      // Where is the wall
+      while (!hitWall) {
         distanceToWall += 0.1;
         const test = {
           x: round(player.x + eye.x * distanceToWall),
           y: round(player.y + eye.y * distanceToWall),
         } as const;
-        if (
-          num(test.x).outside(0, map.width) ||
-          num(test.y).outside(0, map.height)
-        ) {
+        const outOfBoundX = isOutside(test.x, 0, map.width);
+        const outOfBoundY = isOutside(test.y, 0, map.height);
+        if (outOfBoundX || outOfBoundY) {
           hitWall = true;
           distanceToWall = renderDistance;
-        } else {
-          if (rawMap[test.y * map.width + test.x] === "#") {
-            hitWall = true;
-            const p: { distance: number; dot: number }[] = [];
-            for (let tx = 0; tx < 2; tx++) {
-              for (let ty = 0; ty < 2; ty++) {
-                const vy = test.y + ty - player.y;
-                const vx = test.x + tx - player.x;
-                const d = sqrt(vx * vx + vy * vy);
-                const dot = (eye.x * vx) / d + (eye.y * vy) / d;
-                p.push({ distance: d, dot });
-              }
-            }
-            // Sort pairs from closest to farthest
-            p.sort(
-              ({ distance: distance1 }, { distance: distance2 }) =>
-                distance1 - distance2
-            );
-            const bound = 0.005;
-            if (acos(p[0].dot) < bound) hitBoundry = true;
-            if (acos(p[1].dot) < bound) hitBoundry = true;
-            //if (acos(p[2].dot) < bound) hitBoundry = true;
-          }
+        } else if (rawMap[test.y * map.width + test.x] === "#") {
+          hitWall = true;
         }
       }
 
       const ceiling = height / 2.0 - height / distanceToWall;
       const floor = height - ceiling;
       let shade = " ";
-      if (hitBoundry) shade = " ";
-      else if (distanceToWall <= renderDistance / 4) shade = "█";
+      if (distanceToWall <= renderDistance / 4) shade = "█";
       else if (distanceToWall <= renderDistance / 3) shade = "▓";
       else if (distanceToWall <= renderDistance / 2) shade = "▒";
       else if (distanceToWall <= renderDistance / 1) shade = "░";
       else shade = " ";
 
-      // Render in buffer
+      // Render floor & ceiling
       for (let y = 0; y < height; y++) {
         if (y < ceiling) {
           buffer[y * width + x] = " ";
@@ -239,14 +194,47 @@ export class Game {
     }
   }
 
+  /**
+   * Output the content of the buffer
+   * @param elapsed Time spend between 2 frames
+   */
+  private render(elapsed: number) {
+    const { player, width, height, keyPressed, buffer } = this;
+
+    if (this.useBreakLine) {
+      for (let i = 0; i < height; i++) {
+        buffer[width * i] = LINE_BREAK;
+      }
+    }
+
+    // Add minimap
+    this.renderMiniMap();
+
+    // Display this rendering in the console
+    const pressed = [...keyPressed].join("");
+    const angle = toDegree(player.angle);
+    const fps = 1 / elapsed;
+    console.log(
+      [
+        [
+          `X=${player.x}`,
+          `Y=${player.y}`,
+          `A=${angle}`,
+          `Key=${pressed}`,
+          `FPS=${fps}`,
+        ]
+          .join(", ")
+          .padEnd(width, " "),
+        buffer.join(""),
+      ].join(this.useBreakLine ? LINE_BREAK : "")
+    );
+  }
+
+  /**
+   * Display a simple mini-map on le top left corner
+   */
   private renderMiniMap() {
-    const {
-      rawMap,
-      width,
-      player,
-      rawMapSize: map,
-      buffer,
-    } = this;
+    const { rawMap, width, player, rawMapSize: map, buffer } = this;
 
     // Display map
     for (let nx = 0; nx < map.width; nx++) {
@@ -267,19 +255,9 @@ function getPlayerIcon(a: number) {
 
 function toDegree(radian: number) {
   const degree = ((radian * 180) / PI) % 360;
-  if (degree < 0) {
-    return degree + 360;
-  }
-  return degree;
+  return degree < 0 ? degree + 360 : degree;
 }
 
-function num(value: number) {
-  return {
-    between: (start: number, end: number) => {
-      return value >= start && value < end;
-    },
-    outside: (start: number, end: number) => {
-      return value < start || value >= end;
-    },
-  };
+function isOutside(value: number, start: number, end: number) {
+  return value < start || value >= end;
 }
