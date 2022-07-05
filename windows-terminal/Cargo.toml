@@ -1,5 +1,5 @@
 [package]
-name = "deno_plugin"
+name = "windows_terminal_plugin"
 version = "0.1.0"
 authors = ["Mathieu Broutin <mbroutin@sedona.fr>"]
 edition = "2018"
@@ -9,8 +9,9 @@ edition = "2018"
 crate-type = ["cdylib"]
 
 [dependencies]
-deno_core = "0.47.1"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+deno_bindgen = "0.5.1"
+serde = { version = "1", features = ["derive"] }
+
 [target.'cfg(windows)'.dependencies]
-winapi = { version = "0.3", features = ["wincon", "winnt", "wincontypes", "minwindef"] }
+win32console = "0.1.5"
+winapi = { version = "0.3.9", features = ["wincon", "winnt", "wincontypes", "minwindef"] }

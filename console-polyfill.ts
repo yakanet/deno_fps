@@ -25,7 +25,7 @@ if (isDeno) {
   const dispachKeyDown = (message: Uint8Array) => {
     const keys = decoder.decode(message);
     keyPressed = keys.split("");
-    for (let key of keyPressed) {
+    for (const key of keyPressed) {
       const event = Object.assign(new Event("keydown"), { key });
       dispatchEvent(event);
       if (key === "c") {
@@ -35,7 +35,7 @@ if (isDeno) {
   };
 
   const dispachKeyUp = () => {
-    for (let key of keyPressed) {
+    for (const key of keyPressed) {
       const event = Object.assign(new Event("keyup"), { key });
       dispatchEvent(event);
     }

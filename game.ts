@@ -1,6 +1,6 @@
 /// <reference path="./global.d.ts" />
 
-const { PI, trunc, sin, cos, sqrt, acos, round } = Math;
+const { PI, trunc, sin, cos, round } = Math;
 const LINE_BREAK = "\n" as const;
 const clock = {
   start: performance.now(),
